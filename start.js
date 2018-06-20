@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-var app = require('../app')
+var app = require('./app')
 var debug = require('debug')('to-do-express:server')
 var http = require('http')
 
