@@ -7,6 +7,17 @@
 const app = require('./app')
 const debug = require('debug')('to-do-express:server')
 const http = require('http')
+const mongoose = require('mongoose')
+
+// import environmental variables from our variables.env file
+require('dotenv').config({ path: 'variables.env' })
+
+// Connect to our Database and handle any bad connections
+mongoose.connect(process.env.DATABASE)
+mongoose.Promise = global.Promise // Tell Mongoose to use ES6 promises
+mongoose.connection.on('error', err => {
+  console.error(`🙅 🚫 🙅 🚫 🙅 🚫 🙅 🚫 → ${err.message}`)
+})
 
 /**
  * Normalize a port into a number, string, or false.
