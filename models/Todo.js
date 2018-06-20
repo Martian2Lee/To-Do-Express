@@ -15,14 +15,19 @@ const todoSchema = new mongoose.Schema({
   }
 })
 
-todoSchema.pre('save', function(next) {
+todoSchema.pre('save', async function(next) {
   if (!this.isModified('content')) {
     next() // skip it
     return // stop this function from running
   }
   this.slug = slug(this.content)
+  // find other todos that have a slug of wes, wes-1, wes-2
+  const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*$)?)$`, 'i')
+  const todosWithSlug = await this.constructor.find({ slug: slugRegEx })
+  if (todosWithSlug.length) {
+    this.slug = `${this.slug}-${todosWithSlug.length + 1}`
+  }
   next()
-  // TODO make more resilient so slugs are unique
 })
 
 module.exports = mongoose.model('Todo', todoSchema)

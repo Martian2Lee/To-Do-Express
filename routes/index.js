@@ -1,28 +1,16 @@
 const express = require('express')
 const router = express.Router()
 
-// import all of our models
-require('../models/Todo')
-require('../models/User')
-
+const { catchErrors } = require('../handlers/errorHandlers')
 const todoController = require('../controllers/todoController')
 const userController = require('../controllers/userController')
 const authController = require('../controllers/authController')
-const { catchErrors } = require('../handlers/errorHandlers')
 
-router.get('/', (req, res, next) => {
+router.get('/', (req, res) => {
   res.render('index', { title: 'Todo Express' })
 })
 
-router.get('/loginFailure', (req, res, next) => {
-  res.send('Failed Login!')
-})
-
-router.get('/loginSuccess', (req, res, next) => {
-  res.send('You are now logged in!')
-})
-
-router.get('/add', catchErrors(todoController.addTodo))
+router.post('/addTodo', catchErrors(todoController.addTodo))
 
 // 1. Validate the registration data
 // 2. register the user
@@ -33,5 +21,16 @@ router.post(
   catchErrors(userController.register),
   authController.login
 )
+
+router.get('/loginSuccess', (req, res) => {
+  res.send('You are now logged in!')
+})
+router.get('/loginFailure', (req, res) => {
+  res.send('Failed Login!')
+})
+
+router.get('/logout', authController.logout)
+
+router.post('/login', authController.login)
 
 module.exports = router
