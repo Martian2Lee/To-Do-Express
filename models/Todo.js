@@ -5,10 +5,14 @@ const slug = require('slugs')
 const todoSchema = new mongoose.Schema({
   content: {
     type: String,
-    trim: true
+    trim: true,
+    required: 'Please enter content!'
   },
   slug: String,
-  users: [String]
+  users: {
+    type: [String],
+    required: 'You must supply users!'
+  }
 })
 
 todoSchema.pre('save', function(next) {
