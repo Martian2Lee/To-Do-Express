@@ -13,7 +13,7 @@ exports.validateRegister = (req, res, next) => {
 
   const errors = req.validationErrors()
   if (errors) {
-    res.send({ validation: errors, body: req.body })
+    res.send({ errors, body: req.body })
     return // stop the fn from running
   }
   next() // there were no errors!
@@ -23,6 +23,5 @@ exports.register = async (req, res, next) => {
   const user = new User({ email: req.body.email })
   const register = promisify(User.register, User)
   await register(user, req.body.password)
-  res.send('registered!')
-  // next(); // pass to authController.login
+  next() // pass to authController.login
 }

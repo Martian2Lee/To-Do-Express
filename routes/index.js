@@ -7,10 +7,19 @@ require('../models/User')
 
 const todoController = require('../controllers/todoController')
 const userController = require('../controllers/userController')
+const authController = require('../controllers/authController')
 const { catchErrors } = require('../handlers/errorHandlers')
 
 router.get('/', (req, res, next) => {
   res.render('index', { title: 'Todo Express' })
+})
+
+router.get('/loginFailure', (req, res, next) => {
+  res.send('Failed Login!')
+})
+
+router.get('/loginSuccess', (req, res, next) => {
+  res.send('You are now logged in!')
 })
 
 router.get('/add', catchErrors(todoController.addTodo))
@@ -21,7 +30,8 @@ router.get('/add', catchErrors(todoController.addTodo))
 router.post(
   '/register',
   userController.validateRegister,
-  catchErrors(userController.register)
+  catchErrors(userController.register),
+  authController.login
 )
 
 module.exports = router

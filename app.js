@@ -5,9 +5,11 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const bodyParser = require('body-parser')
 const expressValidator = require('express-validator')
+const passport = require('passport')
 
 const indexRouter = require('./routes/index')
 const usersRouter = require('./routes/users')
+require('./handlers/passport')
 
 const app = express()
 
@@ -25,6 +27,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // Exposes a bunch of methods for validating data. Used heavily on userController.validateRegister
 app.use(expressValidator())
+
+// // Passport JS is what we use to handle our logins
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use('/', indexRouter)
 app.use('/users', usersRouter)
