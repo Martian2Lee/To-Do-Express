@@ -3,6 +3,8 @@ const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
+const bodyParser = require('body-parser')
+const expressValidator = require('express-validator')
 
 const indexRouter = require('./routes/index')
 const usersRouter = require('./routes/users')
@@ -14,10 +16,15 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'pug')
 
 app.use(logger('dev'))
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
+
+// Takes the raw requests and turns them into usable properties on req.body
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// Exposes a bunch of methods for validating data. Used heavily on userController.validateRegister
+app.use(expressValidator())
 
 app.use('/', indexRouter)
 app.use('/users', usersRouter)
