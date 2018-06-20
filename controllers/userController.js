@@ -1,3 +1,7 @@
+const mongoose = require('mongoose')
+const User = mongoose.model('User')
+const promisify = require('es6-promisify')
+
 exports.validateRegister = (req, res, next) => {
   req.checkBody('email', 'That Email is not valid!').isEmail()
   req.sanitizeBody('email').normalizeEmail({
@@ -9,9 +13,16 @@ exports.validateRegister = (req, res, next) => {
 
   const errors = req.validationErrors()
   if (errors) {
-    res.send({ errors, body: req.body })
+    res.send({ validation: errors, body: req.body })
     return // stop the fn from running
   }
-  res.send({ errors: null, body: req.body })
   next() // there were no errors!
+}
+
+exports.register = async (req, res, next) => {
+  const user = new User({ email: req.body.email })
+  const register = promisify(User.register, User)
+  await register(user, req.body.password)
+  res.send('registered!')
+  // next(); // pass to authController.login
 }
