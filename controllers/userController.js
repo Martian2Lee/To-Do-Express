@@ -35,6 +35,15 @@ exports.logout = (req, res) => {
   res.send('You are now logged out! 👋')
 }
 
+exports.isLoggedIn = (req, res, next) => {
+  // first check if the user is authenticated
+  if (req.isAuthenticated()) {
+    next() // carry on. They are logged in
+    return
+  }
+  res.send('Oops you must be logged in to do that!')
+}
+
 exports.forgot = async (req, res) => {
   const { user, headers } = req
 

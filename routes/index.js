@@ -12,7 +12,8 @@ const {
   login,
   logout,
   forgot,
-  update
+  update,
+  isLoggedIn
 } = require('../controllers/userController')
 const {
   validateEmail,
@@ -39,7 +40,7 @@ const validateRegister = [
 const checkEmailBeforeLogin = [catchErrors(emailExists), login]
 
 // todo
-router.post('/todo/add', catchErrors(addTodo))
+router.post('/todo/add', isLoggedIn, catchErrors(addTodo))
 
 // register
 router.post(
