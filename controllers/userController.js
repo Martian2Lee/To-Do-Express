@@ -7,6 +7,14 @@ const { sendEmail } = require('../handlers/mail')
 
 const User = mongoose.model('User')
 
+exports.emailShouldNotExist = async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email })
+  if (user) {
+    return res.send('A user with the given email is already registered.')
+  }
+  next()
+}
+
 exports.register = async (req, res, next) => {
   const { email, password } = req.body
 
@@ -16,7 +24,7 @@ exports.register = async (req, res, next) => {
   next()
 }
 
-exports.emailExists = async (req, res, next) => {
+exports.emailShouldExist = async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email })
   if (!user) {
     return res.send('No account with that email exists.')
@@ -30,11 +38,6 @@ exports.login = passport.authenticate('local', {
   failureRedirect: '/login/failure'
 })
 
-exports.logout = (req, res) => {
-  req.logout()
-  res.send('You are now logged out! 👋')
-}
-
 exports.isLoggedIn = (req, res, next) => {
   // first check if the user is authenticated
   if (req.isAuthenticated()) {
@@ -42,6 +45,11 @@ exports.isLoggedIn = (req, res, next) => {
     return
   }
   res.send('Oops you must be logged in to do that!')
+}
+
+exports.logout = (req, res) => {
+  req.logout()
+  res.send('You are now logged out! 👋')
 }
 
 exports.forgot = async (req, res) => {

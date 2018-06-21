@@ -1,22 +1,20 @@
 const mongoose = require('mongoose')
-const validator = require('validator')
 const mongodbErrorHandler = require('mongoose-mongodb-errors')
 const passportLocalMongoose = require('passport-local-mongoose')
+
+const {
+  userEmail,
+  resetPasswordToken,
+  resetPasswordExpires
+} = require('../lib/schemas')
 
 const Schema = mongoose.Schema
 mongoose.Promise = global.Promise
 
 const userSchema = new Schema({
-  email: {
-    type: String,
-    unique: true,
-    lowercase: true,
-    trim: true,
-    validate: [validator.isEmail, 'Invalid Email Address'],
-    required: 'Please Supply an email address'
-  },
-  resetPasswordToken: String,
-  resetPasswordExpires: Date
+  email: userEmail,
+  resetPasswordToken,
+  resetPasswordExpires
 })
 
 userSchema.plugin(passportLocalMongoose, { usernameField: 'email' })

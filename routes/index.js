@@ -1,14 +1,17 @@
 const express = require('express')
 
 // import all of our models
+require('./../models/Board')
 require('./../models/Todo')
 require('./../models/User')
 
 const { catchErrors } = require('../handlers/errorHandlers')
-const { addTodo } = require('../controllers/todoController')
+const { createBoard } = require('../controllers/boardController')
+const { createTodo } = require('../controllers/todoController')
 const {
-  emailExists,
+  emailShouldNotExist,
   register,
+  emailShouldExist,
   login,
   logout,
   forgot,
@@ -16,50 +19,53 @@ const {
   isLoggedIn
 } = require('../controllers/userController')
 const {
-  validateEmail,
-  validatePassword,
-  validatePasswordConfirm,
-  validationErrors
+  registerValidate,
+  todoValidate,
+  boardValidate,
+  forgotValidate,
+  loginValidate,
+  passwordsValidate
 } = require('../controllers/validationController')
 
 const router = express.Router()
 
-const validatePasswords = [
-  validatePassword,
-  validatePasswordConfirm,
-  validationErrors
-]
-
-const validateRegister = [
-  validateEmail,
-  validatePassword,
-  validatePasswordConfirm,
-  validationErrors
-]
-
-const checkEmailBeforeLogin = [catchErrors(emailExists), login]
-
-// todo
-router.post('/todo/add', isLoggedIn, catchErrors(addTodo))
+const loginFlow = [loginValidate, catchErrors(emailShouldExist), login]
 
 // register
 router.post(
   '/register',
-  validateRegister, // 1. Validate the registration data
-  catchErrors(register), // 2. register the user
-  checkEmailBeforeLogin // 3. we need to log them in
+  registerValidate,
+  catchErrors(emailShouldNotExist),
+  catchErrors(register),
+  loginFlow
 )
 
-// login
-router.post('/login', checkEmailBeforeLogin)
-router.get('/login/success', (req, res) => res.send('Welcome!'))
-router.get('/login/failure', (req, res) => res.send('Invalid password.'))
+// board
+router.post(
+  '/board/create',
+  isLoggedIn,
+  boardValidate,
+  catchErrors(createBoard)
+)
+
+// todo
+router.post('/todo/create', isLoggedIn, todoValidate, catchErrors(createTodo))
 
 // logout
 router.get('/logout', logout)
 
+// login
+router.post('/login', loginFlow)
+router.get('/login/success', (req, res) => res.send('Welcome!'))
+router.get('/login/failure', (req, res) => res.send('Invalid password.')) // check email exists in the previous middleware
+
 // reset password
-router.post('/account/forgot', catchErrors(emailExists), catchErrors(forgot))
-router.post('/account/reset/:token', validatePasswords, catchErrors(update))
+router.post(
+  '/account/forgot',
+  forgotValidate,
+  catchErrors(emailShouldExist),
+  catchErrors(forgot)
+)
+router.post('/account/reset/:token', passwordsValidate, catchErrors(update))
 
 module.exports = router
