@@ -30,7 +30,7 @@ app.use(cookieParser())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-// Exposes a bunch of methods for validating data. Used heavily on userController.validateRegister
+// Exposes a bunch of methods for validating data
 app.use(expressValidator())
 
 // Sessions allow us to store data on visitors from request to request
@@ -55,7 +55,7 @@ app.use((req, res, next) => {
   next()
 })
 
-// After allllll that above middleware, we finally handle our own routes!
+// After all that above middleware, we finally handle our own routes
 app.use('/', routes)
 
 // catch 404 and forward to error handler
@@ -65,13 +65,15 @@ app.use((req, res, next) => {
 
 // error handler
 app.use((err, req, res) => {
+  const { locals, status, render } = res
+
   // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
+  locals.message = err.message
+  locals.error = req.app.get('env') === 'development' ? err : {}
 
   // render the error page
-  res.status(err.status || 500)
-  res.render('error')
+  status(err.status || 500)
+  render('error')
 })
 
 module.exports = app

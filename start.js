@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
+require('dotenv').config({ path: 'variables.env' }) // import environmental variables from our variables.env file
 
-// import environmental variables from our variables.env file
-require('dotenv').config({ path: 'variables.env' })
+const app = require('./app')
 
 // Connect to our Database and handle any bad connections
 mongoose.connect(process.env.DATABASE)
@@ -10,15 +10,8 @@ mongoose.connection.on('error', err => {
   console.error(`🙅 🚫 🙅 🚫 🙅 🚫 🙅 🚫 → ${err.message}`)
 })
 
-// READY?! Let's go!
-
-// import all of our models
-require('./models/Todo')
-require('./models/User')
-
-// Start our app!
-const app = require('./app')
+// Start our app
 app.set('port', process.env.PORT || 3000)
-const server = app.listen(app.get('port'), () => {
+const server = app.listen(app.get('port'), () =>
   console.log(`Express running → PORT ${server.address().port}`)
-})
+)

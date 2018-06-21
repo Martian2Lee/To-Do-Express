@@ -1,33 +1,48 @@
+const passport = require('passport')
 const mongoose = require('mongoose')
-const User = mongoose.model('User')
 const promisify = require('es6-promisify')
+const crypto = require('crypto')
 
-exports.validateRegister = (req, res, next) => {
-  req.checkBody('email', 'That Email is not valid!').isEmail()
-  req.sanitizeBody('email').normalizeEmail({
-    gmail_remove_dots: false,
-    remove_extension: false,
-    gmail_remove_subaddress: false
-  })
-  req.checkBody('password', 'Password Cannot be Blank!').notEmpty()
-  req
-    .checkBody('password-confirm', 'Confirmed Password cannot be blank!')
-    .notEmpty()
-  req
-    .checkBody('password-confirm', 'Oops! Your passwords do not match')
-    .equals(req.body.password)
-
-  const errors = req.validationErrors()
-  if (errors) {
-    res.send({ errors, body: req.body })
-    return // stop the fn from running
-  }
-  next() // there were no errors!
-}
+const User = mongoose.model('User')
 
 exports.register = async (req, res, next) => {
-  const user = new User({ email: req.body.email })
+  const { email, password } = req.body
+
+  const user = new User({ email })
   const register = promisify(User.register, User)
-  await register(user, req.body.password)
-  next() // pass to authController.login
+  await register(user, password)
+  next()
+}
+
+exports.emailExists = async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email })
+  if (!user) {
+    return res.send('No account with that email exists.')
+  }
+  req.user = user
+  next()
+}
+
+exports.login = passport.authenticate('local', {
+  successRedirect: '/login/success',
+  failureRedirect: '/login/failure'
+})
+
+exports.logout = (req, res) => {
+  req.logout()
+  res.send('You are now logged out! 👋')
+}
+
+exports.forgot = async (req, res) => {
+  const { user, headers } = req
+
+  // 1. Set reset tokens and expiry on their account
+  user.resetPasswordToken = crypto.randomBytes(20).toString('hex')
+  user.resetPasswordExpires = Date.now() + 3600000 // 1 hour from now
+  await user.save()
+  // 2. Send them an email with the token
+  const resetURL = `http://${headers.host}/account/reset/${
+    user.resetPasswordToken
+  }`
+  res.send(`You have been emailed a password reset link. ${resetURL}`)
 }

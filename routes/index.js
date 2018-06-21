@@ -1,38 +1,56 @@
 const express = require('express')
-const router = express.Router()
+
+// import all of our models
+require('./../models/Todo')
+require('./../models/User')
 
 const { catchErrors } = require('../handlers/errorHandlers')
-const todoController = require('../controllers/todoController')
-const userController = require('../controllers/userController')
-const authController = require('../controllers/authController')
+const { addTodo } = require('../controllers/todoController')
+const {
+  emailExists,
+  register,
+  login,
+  logout,
+  forgot
+} = require('../controllers/userController')
+const {
+  validateEmail,
+  validatePassword,
+  validatePasswordConfirm,
+  validationErrors
+} = require('../controllers/validationController')
 
-router.get('/', (req, res) => {
-  res.render('index', { title: 'Todo Express' })
-})
+const router = express.Router()
 
-router.post('/todo/add', catchErrors(todoController.addTodo))
+const validateRegister = [
+  validateEmail,
+  validatePassword,
+  validatePasswordConfirm,
+  validationErrors
+]
 
-// 1. Validate the registration data
-// 2. register the user
-// 3. we need to log them in
+const checkEmailBeforeLogin = [catchErrors(emailExists), login]
+
+// todo
+router.post('/todo/add', catchErrors(addTodo))
+
+// register
 router.post(
   '/register',
-  userController.validateRegister,
-  catchErrors(userController.register),
-  authController.login
+  validateRegister, // 1. Validate the registration data
+  catchErrors(register), // 2. register the user
+  checkEmailBeforeLogin // 3. we need to log them in
 )
 
-router.get('/loginSuccess', (req, res) => {
-  res.send('You are now logged in!')
-})
-router.get('/loginFailure', (req, res) => {
-  res.send('Failed Login!')
-})
+// login
+router.post('/login', checkEmailBeforeLogin)
+router.get('/login/success', (req, res) => res.send('Welcome!'))
+router.get('/login/failure', (req, res) => res.send('Invalid password.'))
 
-router.get('/logout', authController.logout)
+// logout
+router.get('/logout', logout)
 
-router.post('/login', authController.login)
-
-router.post('/account/forgot', catchErrors(authController.forgot))
+// reset password
+router.post('/account/forgot', catchErrors(emailExists), catchErrors(forgot))
 
 module.exports = router
