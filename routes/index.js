@@ -11,7 +11,8 @@ const {
   register,
   login,
   logout,
-  forgot
+  forgot,
+  update
 } = require('../controllers/userController')
 const {
   validateEmail,
@@ -21,6 +22,12 @@ const {
 } = require('../controllers/validationController')
 
 const router = express.Router()
+
+const validatePasswords = [
+  validatePassword,
+  validatePasswordConfirm,
+  validationErrors
+]
 
 const validateRegister = [
   validateEmail,
@@ -52,5 +59,6 @@ router.get('/logout', logout)
 
 // reset password
 router.post('/account/forgot', catchErrors(emailExists), catchErrors(forgot))
+router.post('/account/reset/:token', validatePasswords, catchErrors(update))
 
 module.exports = router

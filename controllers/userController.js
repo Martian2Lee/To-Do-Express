@@ -46,3 +46,24 @@ exports.forgot = async (req, res) => {
   }`
   res.send(`You have been emailed a password reset link. ${resetURL}`)
 }
+
+exports.update = async (req, res) => {
+  const { params, body, login } = req
+
+  const user = await User.findOne({
+    resetPasswordToken: params.token,
+    resetPasswordExpires: { $gt: Date.now() }
+  })
+
+  if (!user) {
+    return res.send('Password reset is invalid or has expired')
+  }
+
+  const setPassword = promisify(user.setPassword, user)
+  await setPassword(body.password)
+  user.resetPasswordToken = undefined
+  user.resetPasswordExpires = undefined
+  const updatedUser = await user.save()
+  await login(updatedUser)
+  res.send('💃 Nice! Your password has been reset! You are now logged in!')
+}
