@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
   res.render('index', { title: 'Todo Express' })
 })
 
-router.post('/addTodo', catchErrors(todoController.addTodo))
+router.post('/todo/add', catchErrors(todoController.addTodo))
 
 // 1. Validate the registration data
 // 2. register the user
@@ -32,5 +32,7 @@ router.get('/loginFailure', (req, res) => {
 router.get('/logout', authController.logout)
 
 router.post('/login', authController.login)
+
+router.post('/account/forgot', catchErrors(authController.forgot))
 
 module.exports = router
